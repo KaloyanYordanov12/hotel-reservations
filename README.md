@@ -22,6 +22,7 @@ Python is pinned to 3.13. This machine also has 3.14 on PATH, so the venv must b
 py -3.13 -m venv venv
 venv\Scripts\activate
 python --version            # must report 3.13.x
+copy .env.example .env      # required; local config, gitignored
 pip install -r requirements.txt
 ```
 
