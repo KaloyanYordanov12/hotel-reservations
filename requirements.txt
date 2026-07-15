@@ -11,10 +11,6 @@ anyio==4.14.2
     #   watchfiles
 click==8.4.2
     # via uvicorn
-colorama==0.4.6
-    # via
-    #   click
-    #   pytest
 fastapi==0.139.0
     # via -r requirements.in
 greenlet==3.5.3
@@ -82,8 +78,6 @@ typing-inspection==0.4.2
     #   fastapi
     #   pydantic
     #   pydantic-settings
-tzdata==2026.3
-    # via psycopg
 uvicorn==0.51.0
     # via -r requirements.in
 watchfiles==1.2.0
