@@ -50,6 +50,15 @@ docker run --rm -v "${PWD}:/repo" -w /repo python:3.13 \
 
 Then reinstall from the lock and run the tests.
 
+The lock is compiled for Linux and therefore omits `tzdata` and `colorama`,
+which only Windows needs. Installing on Windows with `pip install -r
+requirements.txt` re-resolves transitive deps and pulls both in automatically:
+psycopg declares `tzdata; sys_platform == "win32"`, and click declares
+`colorama; platform_system == 'Windows'`. This is intended and correct. Do not
+add either to `requirements.in`. Do not use `pip-sync` or `--no-deps` on
+Windows: both would strip `tzdata`, and psycopg needs it to build zoneinfo for
+TIMESTAMPTZ columns.
+
 ## Database
 
 The dev database runs in Docker Compose. Tests use a separate database name on the same server.
