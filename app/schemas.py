@@ -10,6 +10,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.models import RoomType
+
 
 class ReservationCreate(BaseModel):
     room_id: str
@@ -71,3 +73,35 @@ class ReservationRead(BaseModel):
     note: str | None
     created_at: datetime
     updated_at: datetime
+
+
+# --- availability -----------------------------------------------------------
+
+
+class RoomAvailability(BaseModel):
+    """One room's status for a requested stay. type and standard_occupancy are
+    included for display; standard_occupancy is never a limit."""
+
+    room_id: str
+    type: RoomType
+    standard_occupancy: int
+    available: bool
+    reservation: ReservationRead | None  # the booking that blocks it, if any
+
+
+class GridCell(BaseModel):
+    date: date
+    available: bool
+    reservation_id: UUID | None
+
+
+class GridRoom(BaseModel):
+    room_id: str
+    type: RoomType
+    standard_occupancy: int
+    days: list[GridCell]
+
+
+class AvailabilityGrid(BaseModel):
+    days: list[date]
+    rooms: list[GridRoom]
