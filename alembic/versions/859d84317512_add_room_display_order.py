@@ -47,8 +47,15 @@ def upgrade() -> None:
             )
         )
     op.alter_column("rooms", "display_order", nullable=False)
+    # A query orders rooms by display_order and DISTINCT ON assumes one row per
+    # room, so a duplicate would make a room silently vanish from the screen.
+    # Enforce uniqueness in the database, not by seed convention.
+    op.create_unique_constraint(
+        "uq_rooms_display_order", "rooms", ["display_order"]
+    )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
+    op.drop_constraint("uq_rooms_display_order", "rooms", type_="unique")
     op.drop_column("rooms", "display_order")

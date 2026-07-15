@@ -1,11 +1,24 @@
 from datetime import date
 from decimal import Decimal
 
+import pytest
+from sqlalchemy.exc import IntegrityError
+
 from app.models import Reservation, Room
 
 
 def test_ten_rooms_seeded(db_session):
     assert db_session.query(Room).count() == 10
+
+
+def test_display_order_must_be_unique(db_session):
+    """Two rooms sharing a display_order would collapse under DISTINCT ON and one
+    room would vanish from the availability screen. The database must forbid it."""
+    room = db_session.get(Room, "3.4")  # display_order 3
+    room.display_order = 1  # 3.2 already holds 1
+    with pytest.raises(IntegrityError) as exc:
+        db_session.flush()
+    assert exc.value.orig.diag.constraint_name == "uq_rooms_display_order"
 
 
 def test_deposit_paid_round_trips_as_decimal(db_session):
