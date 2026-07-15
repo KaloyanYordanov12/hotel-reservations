@@ -25,6 +25,30 @@ python --version            # must report 3.13.x
 pip install -r requirements.txt
 ```
 
+## Dependencies
+
+Direct dependencies live in `requirements.in`, each pinned exactly. The fully
+resolved lock, including every transitive dependency, is `requirements.txt`.
+Install from the lock (`pip install -r requirements.txt`), never from the `.in`.
+
+We deliberately use plain `uvicorn`, not `uvicorn[standard]`. The `[standard]`
+extra pulls in `uvloop`, a Linux-only C extension that cannot install on
+Windows and forces a platform-specific lock, to speed up an event loop that is
+nowhere near the bottleneck for ten rooms and one user. `watchfiles` is added
+back on its own so `uvicorn --reload` works; `httptools`, `websockets`,
+`pyyaml`, and `python-dotenv` are intentionally omitted.
+
+To add or change a dependency: edit `requirements.in`, then recompile the lock
+inside a Linux `python:3.13` container so it matches the VPS, not this Windows
+box:
+
+```
+docker run --rm -v "${PWD}:/repo" -w /repo python:3.13 \
+  bash -c "pip install pip-tools && pip-compile --no-header --output-file=requirements.txt requirements.in"
+```
+
+Then reinstall from the lock and run the tests.
+
 ## Database
 
 The dev database runs in Docker Compose. Tests use a separate database name on the same server.
