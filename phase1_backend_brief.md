@@ -317,6 +317,15 @@ Backend only. No frontend yet. The point is to find deployment problems now, not
 
 Target: the existing Hetzner VPS, same pattern as Agent Central. Postgres on the box, systemd unit for uvicorn, Cloudflare tunnel to a subdomain.
 
+READ THIS BEFORE ANYTHING ELSE IN THIS STEP. That VPS is not empty. It already runs Agent Central, live at `agentcentral.kaloyanyordanov.dev`, and that is my portfolio piece. It is the thing recruiters open. Taking it down while wiring up a booking app for my mother would be the most expensive mistake available in this entire project, and it is available right here, in this step, because we are about to install a database and edit a tunnel config on a machine that is currently serving it.
+
+Rules for this step:
+- ADD ONLY. Never modify, restart, or reconfigure an existing service, unit, or tunnel route. If the task appears to require it, STOP and tell me.
+- Back up the cloudflared config before touching it. Show me the backup path.
+- Report free RAM and free disk before installing anything. Agent Central runs ChromaDB and is not memory-free.
+- After every VPS command that could plausibly affect it, verify Agent Central still answers, and say so.
+- The runbook must include a rollback that returns the box to its current state.
+
 FIRST: check what Python and what Postgres the VPS actually has. Local dev is pinned to Python 3.13 and runs `postgres:16` in Compose, the app ships as a venv under systemd rather than a container, so a mismatch in either surfaces here. Report both versions and stop if either differs. Do not silently retarget the pin, and do not silently accept a Postgres major that you have not run the Step 4 test matrix against. The exclusion constraint and `btree_gist` are old and stable, so a mismatch is unlikely to break, but "unlikely to break" is not something I want discovered on the box holding my mother's bookings.
 
 Write, do not run:
