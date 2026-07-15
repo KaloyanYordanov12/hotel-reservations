@@ -3,3 +3,7 @@ uvicorn==0.51.0
 watchfiles==1.2.0
 httpx2==2.7.0
 pytest==9.1.1
+sqlalchemy==2.0.45
+alembic==1.16.5
+psycopg[binary]==3.2.12
+pydantic-settings==2.12.0
