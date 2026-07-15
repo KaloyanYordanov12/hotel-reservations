@@ -28,7 +28,12 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     database_url: str
-    test_database_url: str
+    # Test-only, and must NOT exist in production. pytest ships in the venv and
+    # the suite truncates tables, so a production box carrying a TEST_DATABASE_URL
+    # is one copy-paste away from wiping real bookings. It defaults to None so
+    # production simply does not have it; the test harness refuses to run unless
+    # it is set to an obviously-separate test database (see tests/conftest.py).
+    test_database_url: str | None = None
     session_secret: str
     app_password_hash: str
 

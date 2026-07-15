@@ -26,6 +26,34 @@ TEST_PASSWORD_HASH = bcrypt.hashpw(
 ).decode()
 
 
+def _check_test_database_is_safe(database_url: str, test_database_url) -> None:
+    """Abort the whole session unless TEST_DATABASE_URL is an obvious test database.
+
+    The suite truncates tables. pytest is installed in production too, so this is
+    the guard that keeps `pytest` on the VPS from ever pointing at and wiping the
+    real bookings.
+    """
+    if test_database_url is None:
+        raise pytest.UsageError(
+            "TEST_DATABASE_URL is not set. Set it in .env to a dedicated test "
+            "database. The test suite truncates tables and will not run without one."
+        )
+    test_db = make_url(test_database_url).database
+    prod_db = make_url(database_url).database
+    if test_db == prod_db or not (test_db and test_db.endswith("_test")):
+        raise pytest.UsageError(
+            "Refusing to run: the test suite truncates tables, so it will not "
+            f"point itself at a database that is not obviously a test database. "
+            f"TEST_DATABASE_URL names '{test_db}', which must differ from "
+            f"DATABASE_URL's database ('{prod_db}') and end with '_test'."
+        )
+
+
+def pytest_configure(config):
+    # Runs before collection, so nothing touches the database until this passes.
+    _check_test_database_is_safe(settings.database_url, settings.test_database_url)
+
+
 @pytest.fixture
 def client():
     return TestClient(app)

@@ -139,8 +139,6 @@ sudo chown root:root /etc/hotel-reservations/hotel-reservations.env
 Now edit `/etc/hotel-reservations/hotel-reservations.env` and set real values:
 
 - `DATABASE_URL`: the password you chose in step 4.
-- `TEST_DATABASE_URL`: same host, the `hotel_test` name. It is never connected to
-  at runtime, but the app refuses to start without it (see "known wart" below).
 - `SESSION_SECRET`: `python3.13 -c "import secrets; print(secrets.token_urlsafe(32))"`
 - `APP_PASSWORD_HASH`: `cd /opt/hotel-reservations && sudo -u hotel ./venv/bin/python scripts/hash_password.py`
 - `COOKIE_SECURE`: leave `True`.
@@ -281,14 +279,3 @@ sudo userdel hotel
 
 `[CHECK AC]` after the tunnel step. Postgres itself, if you installed it fresh,
 can be left in place; it listens only on loopback and serves nothing else.
-
----
-
-## Known wart (flagged, not worked around here)
-
-`app/config.py` lists `test_database_url` as a required setting, so the app will
-not start in production unless `TEST_DATABASE_URL` is set, even though production
-never connects to it. The env template sets it to a same-host value to satisfy
-the check. This is a code smell worth a small future commit (make it optional, or
-move test-only settings out of the production Settings), but it is a code change,
-not a deploy change, so it is out of scope for this step.
