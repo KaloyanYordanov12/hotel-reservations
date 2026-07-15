@@ -15,10 +15,15 @@ from app.main import app
 from app.models import Reservation
 from app.routers.auth import reset_rate_limit
 
-# A known password and its hash, so login can succeed in tests. Hashed once here
-# rather than committing a fixed hash.
+# A known password and its hash, so login can succeed in tests. rounds=4 is the
+# bcrypt minimum: production hardness comes from the default cost (~250ms), which
+# is a security property of the real hash, not something the tests exercise. Here
+# it is pure overhead paid on every api_client login, so use the cheapest cost.
+# Production hashes (scripts/hash_password.py) keep the default cost.
 TEST_PASSWORD = "correct horse battery staple"
-TEST_PASSWORD_HASH = bcrypt.hashpw(TEST_PASSWORD.encode(), bcrypt.gensalt()).decode()
+TEST_PASSWORD_HASH = bcrypt.hashpw(
+    TEST_PASSWORD.encode(), bcrypt.gensalt(rounds=4)
+).decode()
 
 
 @pytest.fixture
