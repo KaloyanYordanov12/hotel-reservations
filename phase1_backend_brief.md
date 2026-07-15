@@ -317,7 +317,7 @@ Backend only. No frontend yet. The point is to find deployment problems now, not
 
 Target: the existing Hetzner VPS, same pattern as Agent Central. Postgres on the box, systemd unit for uvicorn, Cloudflare tunnel to a subdomain.
 
-FIRST: check what Python the VPS actually has. Local dev is pinned to 3.13, the app ships as a venv under systemd rather than a container, so a mismatch between the two surfaces here as an install failure. If the VPS Python differs, tell me the version and stop. Do not silently retarget the pin.
+FIRST: check what Python and what Postgres the VPS actually has. Local dev is pinned to Python 3.13 and runs `postgres:16` in Compose, the app ships as a venv under systemd rather than a container, so a mismatch in either surfaces here. Report both versions and stop if either differs. Do not silently retarget the pin, and do not silently accept a Postgres major that you have not run the Step 4 test matrix against. The exclusion constraint and `btree_gist` are old and stable, so a mismatch is unlikely to break, but "unlikely to break" is not something I want discovered on the box holding my mother's bookings.
 
 Write, do not run:
 - The systemd unit file.

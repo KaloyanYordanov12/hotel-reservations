@@ -16,6 +16,7 @@ Single-user reservation system for my family's 10-room hotel in Bulgaria. The on
 - YOU MUST NOT use em-dashes anywhere. Code, comments, docs, commit messages, chat.
 - This project uses NO AI APIs. No Anthropic key, no OpenAI key, no LLM calls of any kind. If you find yourself wanting one, you have misread the scope.
 - Never commit secrets. `.env` is gitignored. `.env.example` holds placeholders only.
+- **Dependencies are pinned to exact versions with `==`. Never `>=`, never unbounded.** This app ships to a VPS as a venv under systemd, so `pip install -r requirements.txt` must resolve identically in three weeks as it does today. When you add a dependency, install it, then pin the exact version that you actually tested against. If you want to upgrade something, that is a deliberate commit of its own, not a side effect of someone reinstalling.
 
 ## Validation philosophy
 
