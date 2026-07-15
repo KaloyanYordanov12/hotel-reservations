@@ -26,6 +26,18 @@ copy .env.example .env      # required; local config, gitignored
 pip install -r requirements.txt
 ```
 
+The copied `.env` still holds placeholders, and the app refuses to start until
+`SESSION_SECRET` and `APP_PASSWORD_HASH` are real. Generate both and paste each
+into `.env`, replacing the placeholder:
+
+```
+python -c "import secrets; print(secrets.token_urlsafe(32))"   # paste into SESSION_SECRET
+python scripts\hash_password.py                                 # paste into APP_PASSWORD_HASH
+```
+
+`COOKIE_SECURE=False` in the copied `.env` is correct for local dev. After this,
+`pytest` is green and `uvicorn app.main:app --reload` serves the app.
+
 ## Dependencies
 
 Direct dependencies live in `requirements.in`, each pinned exactly. The fully

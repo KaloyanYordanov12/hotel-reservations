@@ -2,7 +2,28 @@ import bcrypt
 import pytest
 from pydantic import ValidationError
 
-from app.config import Settings
+from app.config import _PLACEHOLDER_HASH, _PLACEHOLDER_SECRET, Settings
+
+
+def _env_example_values() -> dict[str, str]:
+    values = {}
+    with open(".env.example", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            values[key.strip()] = value.strip()
+    return values
+
+
+def test_placeholder_guards_match_env_example():
+    """The guards in config.py hardcode the .env.example placeholder strings. If
+    the example ever changes and this copy does not, the guard silently stops
+    guarding, so pin them together here."""
+    values = _env_example_values()
+    assert _PLACEHOLDER_SECRET == values["SESSION_SECRET"]
+    assert _PLACEHOLDER_HASH == values["APP_PASSWORD_HASH"]
 
 # A fully valid config. Individual tests override one field to a bad value and
 # assert startup rejects it. rounds=4 keeps the probe hash cheap.

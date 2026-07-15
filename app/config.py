@@ -20,7 +20,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PLACEHOLDER_SECRET = "replace-with-a-long-random-string"
-_PLACEHOLDER_HASH = "replace-with-an-argon2-or-bcrypt-hash"
+_PLACEHOLDER_HASH = "replace-with-a-bcrypt-hash"
 _MIN_SECRET_LENGTH = 32
 
 
