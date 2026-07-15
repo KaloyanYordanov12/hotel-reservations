@@ -18,30 +18,34 @@ BASELINE = dict(
     room_id="3.3", check_in=date(2026, 8, 10), check_out=date(2026, 8, 15)
 )
 
-# label, room, check_in, check_out, expect_reject
+# label, room, check_in, check_out, expected_constraint
+# expected_constraint is None for an allowed insert, otherwise the exact name of
+# the constraint that must reject it. The overlap cases fire no_double_booking;
+# the zero-night and inverted-date cases fire valid_dates, which is a different
+# constraint and must not be conflated with the overlap ones.
 MATRIX = [
-    ("identical", "3.3", date(2026, 8, 10), date(2026, 8, 15), True),
-    ("fully_inside", "3.3", date(2026, 8, 11), date(2026, 8, 14), True),
-    ("fully_contains", "3.3", date(2026, 8, 8), date(2026, 8, 18), True),
-    ("overlaps_start", "3.3", date(2026, 8, 8), date(2026, 8, 12), True),
-    ("overlaps_end", "3.3", date(2026, 8, 13), date(2026, 8, 18), True),
-    ("turnover_new_checkout_eq_existing_checkin", "3.3", date(2026, 8, 5), date(2026, 8, 10), False),
-    ("turnover_new_checkin_eq_existing_checkout", "3.3", date(2026, 8, 15), date(2026, 8, 20), False),
-    ("entirely_before", "3.3", date(2026, 8, 1), date(2026, 8, 5), False),
-    ("entirely_after", "3.3", date(2026, 8, 20), date(2026, 8, 25), False),
-    ("different_room_same_dates", "4.4", date(2026, 8, 10), date(2026, 8, 15), False),
-    ("zero_night_stay", "3.3", date(2026, 8, 10), date(2026, 8, 10), True),
-    ("inverted_dates", "3.3", date(2026, 8, 15), date(2026, 8, 10), True),
+    ("identical", "3.3", date(2026, 8, 10), date(2026, 8, 15), "no_double_booking"),
+    ("fully_inside", "3.3", date(2026, 8, 11), date(2026, 8, 14), "no_double_booking"),
+    ("fully_contains", "3.3", date(2026, 8, 8), date(2026, 8, 18), "no_double_booking"),
+    ("overlaps_start", "3.3", date(2026, 8, 8), date(2026, 8, 12), "no_double_booking"),
+    ("overlaps_end", "3.3", date(2026, 8, 13), date(2026, 8, 18), "no_double_booking"),
+    ("turnover_new_checkout_eq_existing_checkin", "3.3", date(2026, 8, 5), date(2026, 8, 10), None),
+    ("turnover_new_checkin_eq_existing_checkout", "3.3", date(2026, 8, 15), date(2026, 8, 20), None),
+    ("entirely_before", "3.3", date(2026, 8, 1), date(2026, 8, 5), None),
+    ("entirely_after", "3.3", date(2026, 8, 20), date(2026, 8, 25), None),
+    ("different_room_same_dates", "4.4", date(2026, 8, 10), date(2026, 8, 15), None),
+    ("zero_night_stay", "3.3", date(2026, 8, 10), date(2026, 8, 10), "valid_dates"),
+    ("inverted_dates", "3.3", date(2026, 8, 15), date(2026, 8, 10), "valid_dates"),
 ]
 
 
 @pytest.mark.parametrize(
-    "label,room,check_in,check_out,reject",
+    "label,room,check_in,check_out,expected_constraint",
     MATRIX,
     ids=[row[0] for row in MATRIX],
 )
 def test_overlap_matrix(
-    db_session, reservation_factory, label, room, check_in, check_out, reject
+    db_session, reservation_factory, label, room, check_in, check_out, expected_constraint
 ):
     db_session.add(reservation_factory(**BASELINE))
     db_session.flush()
@@ -49,9 +53,10 @@ def test_overlap_matrix(
     db_session.add(
         reservation_factory(room_id=room, check_in=check_in, check_out=check_out)
     )
-    if reject:
-        with pytest.raises(IntegrityError):
+    if expected_constraint is not None:
+        with pytest.raises(IntegrityError) as exc:
             db_session.flush()
+        assert exc.value.orig.diag.constraint_name == expected_constraint
     else:
         db_session.flush()
         total = db_session.scalar(select(func.count()).select_from(Reservation))
@@ -81,8 +86,9 @@ def test_update_into_conflict_is_rejected(db_session, reservation_factory):
     db_session.flush()
 
     first.check_out = date(2026, 8, 22)  # now overlaps second
-    with pytest.raises(IntegrityError):
+    with pytest.raises(IntegrityError) as exc:
         db_session.flush()
+    assert exc.value.orig.diag.constraint_name == "no_double_booking"
 
 
 def _wait_until_blocked(engine, timeout):
@@ -105,6 +111,11 @@ def _wait_until_blocked(engine, timeout):
             if blocked:
                 return
             time.sleep(0.02)
+    raise AssertionError(
+        "session B never blocked on a lock within the timeout. Without the block "
+        "this test degrades into two sequential inserts and cannot prove the "
+        "constraint serialized concurrent bookings. Fail loudly instead."
+    )
 
 
 # This test exists because an application-level SELECT-then-INSERT check would
@@ -149,12 +160,16 @@ def test_concurrent_overlapping_inserts_only_one_wins(
 
     thread.join(timeout=10.0)
     assert not thread.is_alive(), "session B thread hung; the insert never unblocked"
-    assert isinstance(result.get("error"), IntegrityError)
+
+    error = result.get("error")
+    assert isinstance(error, IntegrityError)
+    assert error.orig.diag.constraint_name == "no_double_booking"
 
     reader = committed_session_factory()
-    remaining = reader.scalar(
-        select(func.count())
-        .select_from(Reservation)
-        .where(Reservation.room_id == "3.3")
-    )
-    assert remaining == 1
+    survivors = reader.scalars(
+        select(Reservation).where(Reservation.room_id == "3.3")
+    ).all()
+    assert len(survivors) == 1
+    # The survivor must be A's booking; B is the one that lost.
+    assert survivors[0].check_in == date(2026, 8, 10)
+    assert survivors[0].check_out == date(2026, 8, 15)
