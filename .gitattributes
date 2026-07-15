@@ -1,0 +1,7 @@
+# These files ship to a Linux VPS and must keep LF line endings, whatever the
+# contributor's platform or git autocrlf setting. A shell script or systemd unit
+# with CRLF endings fails on Linux, and CRLF in the EnvironmentFile would append
+# a carriage return to values like COOKIE_SECURE=True.
+*.sh text eol=lf
+*.service text eol=lf
+deploy/hotel-reservations.env.example text eol=lf

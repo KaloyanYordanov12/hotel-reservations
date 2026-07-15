@@ -1,0 +1,36 @@
+# systemd unit for the hotel reservations backend.
+#
+# Install: copy to /etc/systemd/system/hotel-reservations.service on the VPS,
+# then `systemctl daemon-reload`. daemon-reload only re-reads unit files; it does
+# NOT restart Agent Central or any other running service. See docs/deploy.md.
+#
+# uvicorn binds 127.0.0.1 only. The app is never reachable on the public IP; the
+# Cloudflare tunnel is the only door. Do not change --host to 0.0.0.0.
+
+[Unit]
+Description=Hotel Reservations backend (FastAPI via uvicorn)
+Documentation=file:///opt/hotel-reservations/docs/deploy.md
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hotel
+Group=hotel
+WorkingDirectory=/opt/hotel-reservations
+EnvironmentFile=/etc/hotel-reservations/hotel-reservations.env
+ExecStart=/opt/hotel-reservations/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
+Restart=on-failure
+RestartSec=5
+
+# Hardening. The app writes nothing to disk, so the filesystem is read-only to it.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target
