@@ -107,3 +107,10 @@ class GridRoom(BaseModel):
 class AvailabilityGrid(BaseModel):
     days: list[date]
     rooms: list[GridRoom]
+
+
+# --- auth --------------------------------------------------------------------
+
+
+class LoginRequest(BaseModel):
+    password: str

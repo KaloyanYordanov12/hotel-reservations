@@ -1,5 +1,6 @@
 from datetime import date
 
+import bcrypt
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -12,6 +13,12 @@ from app.config import settings
 from app.db import get_db
 from app.main import app
 from app.models import Reservation
+from app.routers.auth import reset_rate_limit
+
+# A known password and its hash, so login can succeed in tests. Hashed once here
+# rather than committing a fixed hash.
+TEST_PASSWORD = "correct horse battery staple"
+TEST_PASSWORD_HASH = bcrypt.hashpw(TEST_PASSWORD.encode(), bcrypt.gensalt()).decode()
 
 
 @pytest.fixture
@@ -20,14 +27,17 @@ def client():
 
 
 @pytest.fixture
-def api_client(test_engine):
-    """A TestClient whose requests hit the test database with real commits.
+def auth_client(test_engine, monkeypatch):
+    """A TestClient wired to the test database but NOT logged in.
 
-    Overrides the get_db dependency so the API runs against hotel_test rather
-    than the dev database, and truncates reservations afterward. Real commits are
-    used (not a rolled-back transaction) so the conflict path can recover from an
-    IntegrityError and run its follow-up query exactly as it will in production.
+    Overrides get_db so the API runs against hotel_test with real commits (so the
+    conflict path recovers from IntegrityError and runs its follow-up query as in
+    production), points APP_PASSWORD_HASH at a known hash so login can succeed,
+    and clears the rate limiter so tests do not trip each other. Truncates
+    reservations at teardown.
     """
+    monkeypatch.setattr(settings, "app_password_hash", TEST_PASSWORD_HASH)
+    reset_rate_limit()
     maker = sessionmaker(bind=test_engine, future=True)
 
     def override_get_db():
@@ -44,6 +54,14 @@ def api_client(test_engine):
         app.dependency_overrides.clear()
         with test_engine.begin() as conn:
             conn.execute(text("TRUNCATE reservations"))
+
+
+@pytest.fixture
+def api_client(auth_client):
+    """auth_client, already logged in. Use this for the protected endpoints."""
+    response = auth_client.post("/api/login", json={"password": TEST_PASSWORD})
+    assert response.status_code == 200
+    return auth_client
 
 
 def _ensure_test_database() -> None:
