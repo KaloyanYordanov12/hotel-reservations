@@ -115,18 +115,18 @@ Alembic:
 
 | id | type | standard_occupancy |
 |----|------|--------------------|
-| 3.3 | double | TBD |
-| 3.4 | double | TBD |
-| 4.3 | double | TBD |
-| 4.4 | double | TBD |
-| 3.2 | triple | TBD |
-| 4.2 | triple | TBD |
-| A3 | apartment | TBD |
-| A11 | apartment | TBD |
-| 4.1 | studio | TBD |
-| A8 | studio | TBD |
+| 3.3 | double | 2 |
+| 3.4 | double | 2 |
+| 4.3 | double | 2 |
+| 4.4 | double | 2 |
+| 3.2 | triple | 3 |
+| 4.2 | triple | 3 |
+| A3 | apartment | 4 |
+| A11 | apartment | 4 |
+| 4.1 | studio | 4 |
+| A8 | studio | 4 |
 
-BLOCKER. The capacities are not known yet and I will give them to you. If they are still TBD when you reach this step, HALT and ask me for them. Do not guess, do not infer from the room type name, do not use a placeholder and plan to fix it later. A guessed number in a seed migration becomes real data on a real server.
+These numbers are confirmed. The BLOCKER on this step is lifted. Seed exactly these values and do not adjust them.
 
 The column is `standard_occupancy`, NOT `capacity`. This is deliberate and is not a style preference. My mother routinely puts more people in a room than it is intended for, and the system must never make that awkward for her. `capacity` is a word that means "limit", and a limit is a thing future readers of this code will feel an urge to enforce. `standard_occupancy` means "how many normally sleep here", which is descriptive and enforces nothing. The name is the last place the old assumption can hide.
 
