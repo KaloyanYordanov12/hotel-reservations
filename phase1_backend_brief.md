@@ -329,13 +329,18 @@ Rules for this step:
 FIRST: check what Python and what Postgres the VPS actually has. Local dev is pinned to Python 3.13 and runs `postgres:16` in Compose, the app ships as a venv under systemd rather than a container, so a mismatch in either surfaces here. Report both versions and stop if either differs. Do not silently retarget the pin, and do not silently accept a Postgres major that you have not run the Step 4 test matrix against. The exclusion constraint and `btree_gist` are old and stable, so a mismatch is unlikely to break, but "unlikely to break" is not something I want discovered on the box holding my mother's bookings.
 
 Write, do not run:
-- The systemd unit file.
+
+- **The systemd unit file.** uvicorn binds to `127.0.0.1` and nothing else. Never `0.0.0.0`. cloudflared connects to it locally, so there is no reason for the app to be reachable on the public IP, and one strong reason against: `Secure` on the session cookie is enforced by browsers, not by servers. Anyone with curl and the box's IP could log in over plain HTTP and pass the session cookie back by hand, in cleartext, straight past the tunnel and past HTTPS. Bind local, and the tunnel is the only door.
 - A short deploy runbook in `docs/deploy.md`: exact commands, in order.
-- `docs/backup.md` plus a `pg_dump` script and the cron line. Nightly dump, gzipped, timestamped, keep 14 days, and a documented restore command that I have actually tested once. This is my mother's business data. If the VPS dies and there is no backup, the hotel loses its bookings.
+- `docs/backup.md` plus a `pg_dump` script and the cron line. Nightly dump, gzipped, timestamped, keep 14 days, and a documented restore command that I have actually tested once. This is my mother's business data.
+
+  **The dump must be copied off the box.** A gzip sitting on the same disk as the database it came from is not a backup, it is a second copy of the same failure. It protects against the likelier accidents (a bad migration, deleted rows, my own mistake at 1am) and against nothing else. If the VPS dies, an on-box dump dies with it, and the hotel loses every forward booking it has.
+
+  Do not pick the destination yourself. Report what the VPS can already reach and what it would cost, and stop. I decide where it goes.
 
 Then stop and hand me the runbook. I run it on the VPS myself.
 
-Done when: `/health` answers over HTTPS on the real domain, login works from my phone, and I have restored a dump into a scratch database at least once.
+Done when: `/health` answers over HTTPS on the real domain, login works from my phone, the app is not reachable on the VPS public IP, and I have restored a dump into a scratch database at least once.
 
 Commit: `chore: deployment runbook, systemd unit, and backup script`
 
