@@ -9,6 +9,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import settings
+from app.db import get_db
 from app.main import app
 from app.models import Reservation
 
@@ -16,6 +17,33 @@ from app.models import Reservation
 @pytest.fixture
 def client():
     return TestClient(app)
+
+
+@pytest.fixture
+def api_client(test_engine):
+    """A TestClient whose requests hit the test database with real commits.
+
+    Overrides the get_db dependency so the API runs against hotel_test rather
+    than the dev database, and truncates reservations afterward. Real commits are
+    used (not a rolled-back transaction) so the conflict path can recover from an
+    IntegrityError and run its follow-up query exactly as it will in production.
+    """
+    maker = sessionmaker(bind=test_engine, future=True)
+
+    def override_get_db():
+        session = maker()
+        try:
+            yield session
+        finally:
+            session.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
+        with test_engine.begin() as conn:
+            conn.execute(text("TRUNCATE reservations"))
 
 
 def _ensure_test_database() -> None:

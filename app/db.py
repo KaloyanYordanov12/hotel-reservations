@@ -14,3 +14,15 @@ class Base(DeclarativeBase):
 
 engine = create_engine(settings.database_url, future=True)
 SessionLocal = sessionmaker(bind=engine, future=True)
+
+
+def get_db():
+    """FastAPI dependency yielding a session, closed when the request ends.
+
+    Tests override this to bind requests to the test database.
+    """
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
