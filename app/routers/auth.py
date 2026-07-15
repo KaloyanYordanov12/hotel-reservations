@@ -40,8 +40,10 @@ def _rate_limited(ip: str) -> bool:
 
 
 def _password_ok(password: str) -> bool:
-    # checkpw raises ValueError on a malformed hash (for example the .env.example
-    # placeholder). Treat that as a failed login, never a 500.
+    # config.py validates APP_PASSWORD_HASH is a parseable bcrypt hash at startup,
+    # so this checkpw can no longer receive a malformed hash and the except is
+    # unreachable in practice. It is kept so that if that startup check is ever
+    # weakened, a bad hash still yields a failed login rather than a 500.
     try:
         return bcrypt.checkpw(password.encode(), settings.app_password_hash.encode())
     except ValueError:
