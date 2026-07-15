@@ -85,6 +85,7 @@ class RoomAvailability(BaseModel):
     room_id: str
     type: RoomType
     standard_occupancy: int
+    display_order: int
     available: bool
     reservation: ReservationRead | None  # the booking that blocks it, if any
 
@@ -99,6 +100,7 @@ class GridRoom(BaseModel):
     room_id: str
     type: RoomType
     standard_occupancy: int
+    display_order: int
     days: list[GridCell]
 
 

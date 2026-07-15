@@ -44,6 +44,10 @@ class Room(Base):
         Enum(RoomType, name="room_type"), nullable=False
     )
     standard_occupancy: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Display only, like standard_occupancy. It sorts the rooms into a sensible
+    # order for the screen (string order puts A11 before A3). It appears in no
+    # rejection path.
+    display_order: Mapped[int] = mapped_column(Integer, nullable=False)
 
 
 class Reservation(Base):

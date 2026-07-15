@@ -20,6 +20,26 @@ def _by_room(entries):
 # --- point-in-range availability --------------------------------------------
 
 
+DISPLAY_ORDER = ["3.2", "3.3", "3.4", "4.1", "4.2", "4.3", "4.4", "A3", "A8", "A11"]
+
+
+def test_availability_returns_rooms_in_display_order(api_client):
+    entries = api_client.get(
+        "/api/availability",
+        params={"check_in": "2026-08-10", "check_out": "2026-08-15"},
+    ).json()
+    assert [entry["room_id"] for entry in entries] == DISPLAY_ORDER
+    assert [entry["display_order"] for entry in entries] == list(range(1, 11))
+
+
+def test_grid_returns_rooms_in_display_order(api_client):
+    grid = api_client.get(
+        "/api/availability/grid", params={"from": "2026-08-10", "to": "2026-08-12"}
+    ).json()
+    assert [room["room_id"] for room in grid["rooms"]] == DISPLAY_ORDER
+    assert [room["display_order"] for room in grid["rooms"]] == list(range(1, 11))
+
+
 def test_all_rooms_free_on_empty_range(api_client):
     entries = api_client.get(
         "/api/availability",

@@ -41,7 +41,8 @@ def availability(
     _require_range(check_in, check_out)
 
     # One row per room via DISTINCT ON: the earliest reservation overlapping the
-    # requested stay, or NULL when the room is free.
+    # requested stay, or NULL when the room is free. display_order is unique per
+    # room, so DISTINCT ON it yields one row per room and sorts them for display.
     stmt = (
         select(Room, Reservation)
         .outerjoin(
@@ -52,8 +53,8 @@ def availability(
                 check_in < Reservation.check_out,
             ),
         )
-        .order_by(Room.id, Reservation.check_in)
-        .distinct(Room.id)
+        .order_by(Room.display_order, Reservation.check_in)
+        .distinct(Room.display_order)
     )
 
     return [
@@ -61,6 +62,7 @@ def availability(
             room_id=room.id,
             type=room.type,
             standard_occupancy=room.standard_occupancy,
+            display_order=room.display_order,
             available=reservation is None,
             reservation=(
                 ReservationRead.model_validate(reservation)
@@ -92,7 +94,7 @@ def availability_grid(
                 from_ < Reservation.check_out,
             ),
         )
-        .order_by(Room.id, Reservation.check_in)
+        .order_by(Room.display_order, Reservation.check_in)
     ).all()
 
     rooms: dict[str, tuple[Room, list[Reservation]]] = {}
@@ -127,6 +129,7 @@ def availability_grid(
                 room_id=room.id,
                 type=room.type,
                 standard_occupancy=room.standard_occupancy,
+                display_order=room.display_order,
                 days=cells,
             )
         )
