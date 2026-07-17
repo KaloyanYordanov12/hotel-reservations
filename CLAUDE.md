@@ -60,6 +60,16 @@ Availability view, add, edit, delete, deposit tracking. That is all of it.
 
 Not in scope, do not build, do not suggest: phone or voice assistant, payments, guest-facing booking, multi-user, roles, notifications, analytics, reporting, caching, EGN.
 
+## This repo is public, and that is deliberate
+
+It lives at `github.com/KaloyanYordanov12/hotel-reservations` under my own name. It is a portfolio piece and people are meant to read it.
+
+`kaloyanyordanov.dev` and `agentcentral.kaloyanyordanov.dev` are MY domain and MY portfolio piece, already public and on my CV. This repo being public is precisely so that someone connects the two. They appear in `docs/deploy.md` and the brief on purpose. They are not a leak. Do not replace them with placeholders, do not raise them as an audit finding, do not suggest making this repo private over them.
+
+What genuinely must never be committed: real secrets, real session keys, real password hashes, `.env`, the VPS IP or SSH strings, the hotel's name or address, and any real guest data. None of those are here, and that is the standard to hold.
+
+Never suggest deleting the repo, rewriting published history, or force-pushing. If you think something sensitive has been committed, say so plainly and stop. I decide.
+
 ## Commands
 
 To be filled in once Step 1 exists.
