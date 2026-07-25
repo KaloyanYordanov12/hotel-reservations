@@ -96,7 +96,12 @@ button {
 
 /* Inputs and buttons are at least 44px tall: thumb-sized for one-handed use. */
 input[type='date'],
-input[type='password'] {
+input[type='password'],
+input[type='text'],
+input[type='tel'],
+input[type='number'],
+select,
+textarea {
   width: 100%;
   min-height: 3rem;
   margin-top: 0.35rem;
@@ -105,6 +110,15 @@ input[type='password'] {
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+textarea {
+  padding: 0.65rem 0.85rem;
+  min-height: 5rem;
+  line-height: 1.4;
+  resize: vertical;
 }
 
 button {

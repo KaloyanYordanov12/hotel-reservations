@@ -1,0 +1,70 @@
+.book h1 {
+  margin-bottom: 1.3rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.field-check input {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.actions button[type='submit'] {
+  flex: 1;
+}
+
+/* Delete is destructive and easy to fat-finger on a phone, so it is set apart
+   and asks for a second tap to confirm. */
+.danger {
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.danger span {
+  color: var(--ink-soft);
+}
+
+.danger__trigger {
+  color: var(--booked);
+  border-color: var(--booked-line);
+}
+
+.danger__yes {
+  background: var(--booked);
+  border-color: var(--booked);
+  color: var(--paper-raised);
+}
