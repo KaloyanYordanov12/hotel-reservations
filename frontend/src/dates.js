@@ -2,11 +2,6 @@
 // format and step dates in local components and never touch toISOString (which
 // is UTC and would shift the day).
 
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-]
-
 export function toISODate(date) {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -25,8 +20,8 @@ export function addDays(isoDate, days) {
   return toISODate(date)
 }
 
-// "2026-08-10" -> "10 Aug". Static month names so it reads the same everywhere.
+// "2026-08-10" -> "10.08". Bulgarian day-first numeric format.
 export function formatShort(isoDate) {
   const [, month, day] = isoDate.split('-').map(Number)
-  return `${day} ${MONTHS[month - 1]}`
+  return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}`
 }

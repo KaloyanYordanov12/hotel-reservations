@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { api } from '../api'
 import { addDays, formatShort, today } from '../dates'
+import { strings as t } from '../strings'
 import './SearchScreen.css'
 
 // The primary screen: she is on the phone with a guest asking "anything free
@@ -28,7 +29,7 @@ export default function SearchScreen() {
         if (!cancelled) setRooms(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) setError(err)
       })
     return () => {
       cancelled = true
@@ -52,7 +53,7 @@ export default function SearchScreen() {
     <main className="search">
       <form className="range" onSubmit={(event) => event.preventDefault()}>
         <label>
-          Check in
+          {t.search.checkIn}
           <input
             type="date"
             value={checkIn}
@@ -60,7 +61,7 @@ export default function SearchScreen() {
           />
         </label>
         <label>
-          Check out
+          {t.search.checkOut}
           <input
             type="date"
             value={checkOut}
@@ -69,19 +70,21 @@ export default function SearchScreen() {
         </label>
       </form>
 
-      {!validRange && <p className="hint">Check-out must be after check-in.</p>}
+      {!validRange && <p className="hint">{t.search.invalidRange}</p>}
 
       {validRange && error && (
         <p className="hint hint--error" role="alert">
-          Could not load availability. {error}
+          {t.search.loadError}
         </p>
       )}
 
       {validRange && rooms && (
         <div className="results fade-in" key={`${checkIn}_${checkOut}`}>
           <section>
-            <h2>Free · {free.length}</h2>
-            {free.length === 0 && <p className="empty">No rooms free for these dates.</p>}
+            <h2>
+              {t.search.freeHeading} · {free.length}
+            </h2>
+            {free.length === 0 && <p className="empty">{t.search.noneFree}</p>}
             <ul className="rooms">
               {free.map((room) => (
                 <li key={room.room_id}>
@@ -92,10 +95,10 @@ export default function SearchScreen() {
                     <span className="room__id">{room.room_id}</span>
                     <span className="room__body">
                       <span className="room__meta">
-                        {room.type} · sleeps {room.standard_occupancy}
+                        {t.roomTypes[room.type] || room.type} · {t.search.sleeps(room.standard_occupancy)}
                       </span>
                     </span>
-                    <span className="room__tag room__tag--free">Free</span>
+                    <span className="room__tag room__tag--free">{t.search.freeTag}</span>
                   </Link>
                 </li>
               ))}
@@ -104,7 +107,9 @@ export default function SearchScreen() {
 
           {booked.length > 0 && (
             <section>
-              <h2>Booked · {booked.length}</h2>
+              <h2>
+                {t.search.bookedHeading} · {booked.length}
+              </h2>
               <ul className="rooms">
                 {booked.map((room) => (
                   <li key={room.room_id}>
@@ -112,16 +117,16 @@ export default function SearchScreen() {
                       <span className="room__id">{room.room_id}</span>
                       <span className="room__body">
                         <span className="room__meta">
-                          {room.type} · sleeps {room.standard_occupancy}
+                          {t.roomTypes[room.type] || room.type} · {t.search.sleeps(room.standard_occupancy)}
                         </span>
                         {room.reservation && (
                           <span className="room__guest">
-                            {room.reservation.guest_name}, {formatShort(room.reservation.check_in)} to{' '}
+                            {room.reservation.guest_name}, {formatShort(room.reservation.check_in)} {t.common.to}{' '}
                             {formatShort(room.reservation.check_out)}
                           </span>
                         )}
                       </span>
-                      <span className="room__tag room__tag--booked">Booked</span>
+                      <span className="room__tag room__tag--booked">{t.search.bookedTag}</span>
                     </div>
                   </li>
                 ))}

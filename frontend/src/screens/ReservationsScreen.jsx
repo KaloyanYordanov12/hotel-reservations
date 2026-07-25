@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom'
 
 import { api } from '../api'
 import { formatShort } from '../dates'
+import { strings as t } from '../strings'
 import './ReservationsScreen.css'
 
 const FILTERS = [
-  { key: 'all', label: 'All', query: '' },
-  { key: 'owes', label: 'Owes deposit', query: '?deposit_paid=false' },
+  { key: 'all', label: t.reservations.filterAll, query: '' },
+  { key: 'owes', label: t.reservations.filterOwes, query: '?deposit_paid=false' },
 ]
 
 // Money is compared as a string, never parsed to a float. "Owes" means the
@@ -31,7 +32,7 @@ export default function ReservationsScreen() {
         if (!cancelled) setReservations(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) setError(err)
       })
     return () => {
       cancelled = true
@@ -55,13 +56,13 @@ export default function ReservationsScreen() {
 
       {error && (
         <p className="hint hint--error" role="alert">
-          Could not load reservations. {error}
+          {t.reservations.loadError}
         </p>
       )}
 
       {reservations && reservations.length === 0 && (
         <p className="empty">
-          {filter === 'owes' ? 'Everyone has paid a deposit.' : 'No reservations yet.'}
+          {filter === 'owes' ? t.reservations.emptyOwes : t.reservations.emptyAll}
         </p>
       )}
 
@@ -79,14 +80,16 @@ export default function ReservationsScreen() {
                   <span className="res__body">
                     <span className="res__name">{reservation.guest_name}</span>
                     <span className="res__meta">
-                      Room {reservation.room_id} · {formatShort(reservation.check_in)} to{' '}
-                      {formatShort(reservation.check_out)}
+                      {t.reservations.roomPrefix} {reservation.room_id} · {formatShort(reservation.check_in)}{' '}
+                      {t.common.to} {formatShort(reservation.check_out)}
                     </span>
                   </span>
                   <span
                     className={`res__deposit ${paid ? 'res__deposit--paid' : 'res__deposit--owes'}`}
                   >
-                    {paid ? `€${reservation.deposit_paid} paid` : 'Owes deposit'}
+                    {paid
+                      ? t.reservations.depositPaid(reservation.deposit_paid)
+                      : t.reservations.owesDeposit}
                   </span>
                 </Link>
               </li>

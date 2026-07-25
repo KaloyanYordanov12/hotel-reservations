@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { api } from '../api'
 import { addDays, formatShort, today } from '../dates'
+import { strings as t } from '../strings'
 import './GridScreen.css'
 
 // The secondary, laptop-first planning view: a room-by-day matrix answering
@@ -26,7 +27,7 @@ export default function GridScreen() {
         if (!cancelled) setGrid(data)
       })
       .catch((err) => {
-        if (!cancelled) setError(err.message)
+        if (!cancelled) setError(err)
       })
     return () => {
       cancelled = true
@@ -45,33 +46,33 @@ export default function GridScreen() {
     <main className="grid-screen">
       <form className="range" onSubmit={(event) => event.preventDefault()}>
         <label>
-          From
+          {t.planner.from}
           <input type="date" value={from} onChange={(event) => handleFromChange(event.target.value)} />
         </label>
         <label>
-          To
+          {t.planner.to}
           <input type="date" value={to} onChange={(event) => setTo(event.target.value)} />
         </label>
       </form>
 
-      {!validRange && <p className="hint">The end date must be after the start.</p>}
+      {!validRange && <p className="hint">{t.planner.invalidRange}</p>}
 
       {validRange && error && (
         <p className="hint hint--error" role="alert">
-          Could not load the planner. {error}
+          {t.planner.loadError}
         </p>
       )}
 
       {validRange && grid && (
         <>
           <p className="grid-caption">
-            {formatShort(from)} to {formatShort(to)}
+            {formatShort(from)} {t.common.to} {formatShort(to)}
           </p>
           <div className="grid-scroll">
             <table className="grid">
               <thead>
                 <tr>
-                  <th className="grid__corner">Room</th>
+                  <th className="grid__corner">{t.planner.room}</th>
                   {grid.days.map((day) => (
                     <th key={day} className="grid__day" title={formatShort(day)}>
                       {Number(day.split('-')[2])}
@@ -87,7 +88,7 @@ export default function GridScreen() {
                       <td
                         key={cell.date}
                         className={cell.available ? 'cell cell--free' : 'cell cell--booked'}
-                        title={`${room.room_id} · ${formatShort(cell.date)} · ${cell.available ? 'free' : 'booked'}`}
+                        title={`${room.room_id} · ${formatShort(cell.date)} · ${cell.available ? t.planner.free : t.planner.booked}`}
                       />
                     ))}
                   </tr>
@@ -96,8 +97,8 @@ export default function GridScreen() {
             </table>
           </div>
           <p className="grid-legend">
-            <span className="grid-legend__swatch grid-legend__swatch--free" /> Free
-            <span className="grid-legend__swatch grid-legend__swatch--booked" /> Booked
+            <span className="grid-legend__swatch grid-legend__swatch--free" /> {t.planner.free}
+            <span className="grid-legend__swatch grid-legend__swatch--booked" /> {t.planner.booked}
           </p>
         </>
       )}

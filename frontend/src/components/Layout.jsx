@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { useAuth } from '../auth/authContext'
+import { strings as t } from '../strings'
 import './Layout.css'
 
 // Shell for the two main tabs. The focused booking form is deliberately outside
@@ -12,16 +13,16 @@ export default function Layout() {
     <div className="layout">
       <nav className="tabs">
         <NavLink to="/" end className="tab">
-          Availability
+          {t.tabs.availability}
         </NavLink>
         <NavLink to="/reservations" className="tab">
-          Reservations
+          {t.tabs.reservations}
         </NavLink>
         <NavLink to="/grid" className="tab">
-          Planner
+          {t.tabs.planner}
         </NavLink>
         <button type="button" className="ghost tabs__logout" onClick={logout}>
-          Log out
+          {t.common.logout}
         </button>
       </nav>
       <Outlet />

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { api } from '../api'
-import { addDays, today } from '../dates'
+import { addDays, formatShort, today } from '../dates'
+import { strings as t } from '../strings'
 import './BookScreen.css'
 
 // One form for both create and edit. It opens already filled from context: from
@@ -63,10 +64,10 @@ export default function BookScreen() {
         }
       }
     }
-    init().catch((err) => {
+    init().catch(() => {
       if (!cancelled) {
         setLoading(false)
-        setError(err.message)
+        setError(t.booking.loadError)
       }
     })
     return () => {
@@ -77,14 +78,33 @@ export default function BookScreen() {
 
   function showSubmitError(err) {
     if (err.status === 409) {
+      // Build the clash message from the structured detail, not the backend's
+      // English text, so the UI stays fully Bulgarian.
       const detail = err.body && err.body.detail
-      setError((detail && detail.message) || 'Those dates clash with another booking.')
+      if (detail && detail.conflict) {
+        setError(
+          t.booking.conflict(
+            detail.room_id,
+            detail.conflict.guest_name,
+            formatShort(detail.conflict.check_in),
+            formatShort(detail.conflict.check_out),
+          ),
+        )
+      } else {
+        setError(t.booking.conflictGeneric)
+      }
     } else if (err.status === 422) {
+      // Map the offending field from the pydantic error to a Bulgarian message.
       const detail = err.body && err.body.detail
-      if (Array.isArray(detail) && detail.length) setError(detail[0].msg)
-      else setError(typeof detail === 'string' ? detail : 'Please check the fields.')
+      const field =
+        Array.isArray(detail) && detail[0] && Array.isArray(detail[0].loc)
+          ? detail[0].loc[detail[0].loc.length - 1]
+          : null
+      if (field === 'num_guests') setError(t.booking.guestsMin)
+      else if (field === 'deposit_paid') setError(t.booking.depositNegative)
+      else setError(t.booking.validationGeneric)
     } else {
-      setError(err.message)
+      setError(t.booking.saveError)
     }
   }
 
@@ -101,18 +121,18 @@ export default function BookScreen() {
     setError(null)
 
     const missing = []
-    if (!guestName.trim()) missing.push('guest name')
-    if (!guestPhone.trim()) missing.push('phone')
-    if (!roomId) missing.push('room')
-    if (!checkIn) missing.push('check-in')
-    if (!checkOut) missing.push('check-out')
-    if (!numGuests) missing.push('guests')
+    if (!guestName.trim()) missing.push(t.booking.fields.guestName)
+    if (!guestPhone.trim()) missing.push(t.booking.fields.phone)
+    if (!roomId) missing.push(t.booking.fields.room)
+    if (!checkIn) missing.push(t.booking.fields.checkIn)
+    if (!checkOut) missing.push(t.booking.fields.checkOut)
+    if (!numGuests) missing.push(t.booking.fields.guests)
     if (missing.length) {
-      setError(`Please fill in: ${missing.join(', ')}.`)
+      setError(t.booking.fillIn(missing.join(', ')))
       return
     }
     if (checkOut <= checkIn) {
-      setError('Check-out must be after check-in.')
+      setError(t.booking.invalidRange)
       return
     }
 
@@ -145,15 +165,15 @@ export default function BookScreen() {
     try {
       await api.del(`/reservations/${id}`)
       navigate('/reservations')
-    } catch (err) {
-      setError(err.message)
+    } catch {
+      setError(t.booking.deleteError)
     }
   }
 
   if (loading) {
     return (
       <main className="book">
-        <p>Loading...</p>
+        <p>{t.common.loading}</p>
       </main>
     )
   }
@@ -162,27 +182,27 @@ export default function BookScreen() {
 
   return (
     <main className="book">
-      <h1>{isEdit ? 'Edit booking' : 'New booking'}</h1>
+      <h1>{isEdit ? t.booking.titleEdit : t.booking.titleNew}</h1>
 
       <form className="form" onSubmit={handleSubmit}>
         <label className="field">
-          Guest name
+          {t.booking.guestName}
           <input value={guestName} onChange={(e) => setGuestName(e.target.value)} autoFocus={!isEdit} />
         </label>
 
         <label className="field">
-          Phone
+          {t.booking.phone}
           <input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
         </label>
 
         <label className="field">
-          Room
+          {t.booking.room}
           <select value={roomId} onChange={(e) => setRoomId(e.target.value)}>
-            {!roomId && <option value="">Pick a room</option>}
+            {!roomId && <option value="">{t.booking.pickRoom}</option>}
             {roomOptions.map((room) => (
               <option key={room.id} value={room.id}>
                 {room.id}
-                {room.type ? ` (${room.type})` : ''}
+                {room.type ? ` (${t.roomTypes[room.type] || room.type})` : ''}
               </option>
             ))}
           </select>
@@ -190,18 +210,18 @@ export default function BookScreen() {
 
         <div className="field-row">
           <label className="field">
-            Check in
+            {t.booking.checkIn}
             <input type="date" value={checkIn} onChange={(e) => handleCheckInChange(e.target.value)} />
           </label>
           <label className="field">
-            Check out
+            {t.booking.checkOut}
             <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
           </label>
         </div>
 
         <div className="field-row">
           <label className="field">
-            Guests
+            {t.booking.guests}
             <input
               type="number"
               min="1"
@@ -211,7 +231,7 @@ export default function BookScreen() {
             />
           </label>
           <label className="field">
-            Deposit (EUR)
+            {t.booking.deposit}
             <input
               type="text"
               inputMode="decimal"
@@ -223,11 +243,11 @@ export default function BookScreen() {
 
         <label className="field-check">
           <input type="checkbox" checked={parking} onChange={(e) => setParking(e.target.checked)} />
-          Parking
+          {t.booking.parking}
         </label>
 
         <label className="field">
-          Note
+          {t.booking.note}
           <textarea rows="3" value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
 
@@ -239,14 +259,14 @@ export default function BookScreen() {
 
         <div className="actions">
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Saving...' : isEdit ? 'Save changes' : 'Create booking'}
+            {submitting ? t.booking.submitting : isEdit ? t.booking.submitEdit : t.booking.submitNew}
           </button>
           <button
             type="button"
             className="ghost"
             onClick={() => navigate(isEdit ? '/reservations' : '/')}
           >
-            Cancel
+            {t.booking.cancel}
           </button>
         </div>
       </form>
@@ -255,17 +275,17 @@ export default function BookScreen() {
         <div className="danger">
           {confirmingDelete ? (
             <>
-              <span>Delete this booking?</span>
+              <span>{t.booking.deleteQuestion}</span>
               <button type="button" className="danger__yes" onClick={handleDelete}>
-                Yes, delete
+                {t.booking.deleteYes}
               </button>
               <button type="button" className="ghost" onClick={() => setConfirmingDelete(false)}>
-                Cancel
+                {t.booking.cancel}
               </button>
             </>
           ) : (
             <button type="button" className="ghost danger__trigger" onClick={() => setConfirmingDelete(true)}>
-              Delete booking
+              {t.booking.deleteTrigger}
             </button>
           )}
         </div>
