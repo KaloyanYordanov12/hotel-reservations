@@ -279,3 +279,11 @@ sudo userdel hotel
 
 `[CHECK AC]` after the tunnel step. Postgres itself, if you installed it fresh,
 can be left in place; it listens only on loopback and serves nothing else.
+
+---
+
+## Frontend
+
+The Phase 2 React app is served by this same service and ships through the same
+tunnel route, so it needs no tunnel change of its own. See
+`docs/deploy-frontend.md`.
