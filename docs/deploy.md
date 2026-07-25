@@ -23,7 +23,7 @@ is not healthy, stop and roll back (see the end of this file).
 Placeholders to settle before you start:
 
 - `RESERVATIONS_DOMAIN` (suggested `reservations.kaloyanyordanov.dev`)
-- `APP_PORT` (this runbook uses `8001`; confirm it is free in step 1)
+- `APP_PORT` (this runbook uses `8010`; confirm it is free in step 1)
 
 ---
 
@@ -58,7 +58,7 @@ Local dev is Python 3.13 and Postgres 16. A mismatch surfaces here, not silently
 ```
 python3.13 --version            # expect Python 3.13.x
 psql --version                  # expect psql (PostgreSQL) 16.x, if Postgres exists
-ss -ltnp | grep -w :8001 || echo "8001 is free"
+ss -ltnp | grep -w :8010 || echo "8010 is free"
 ```
 
 STOP conditions, do not work around them:
@@ -67,7 +67,7 @@ STOP conditions, do not work around them:
 - Postgres is present but not major 16: stop and tell me. Do not upgrade or
   reconfigure the existing cluster (it may be shared), and do not run the Step 4
   exclusion-constraint matrix against a major it was never tested on.
-- `8001` is taken: pick another free port and use it consistently in the unit
+- `8010` is taken: pick another free port and use it consistently in the unit
   file and the tunnel target below.
 
 If Postgres is not installed at all, that is fine to add (it is a new service,
@@ -172,8 +172,8 @@ sudo systemctl status hotel-reservations --no-pager
 Confirm it is up on loopback and nowhere else:
 
 ```
-curl -fsS http://127.0.0.1:8001/health          # expect {"status":"ok"}
-ss -ltnp | grep -w :8001                          # address must be 127.0.0.1:8001, never 0.0.0.0
+curl -fsS http://127.0.0.1:8010/health          # expect {"status":"ok"}
+ss -ltnp | grep -w :8010                          # address must be 127.0.0.1:8010, never 0.0.0.0
 ```
 
 `[CHECK AC]`
@@ -182,7 +182,7 @@ ss -ltnp | grep -w :8001                          # address must be 127.0.0.1:80
 
 ## Step 8: Cloudflare tunnel route (the risky one)
 
-The goal is one new public hostname pointing at `http://127.0.0.1:8001`. How you
+The goal is one new public hostname pointing at `http://127.0.0.1:8010`. How you
 add it depends on how the existing tunnel is configured. Prefer the path that
 does NOT touch the running cloudflared service.
 
@@ -202,7 +202,7 @@ local change and NO restart of cloudflared:
 - Zero Trust > Networks > Tunnels > (the tunnel serving Agent Central) >
   Public Hostname > Add a public hostname.
 - Subdomain/domain: `RESERVATIONS_DOMAIN`.
-- Service: `HTTP` -> `localhost:8001`.
+- Service: `HTTP` -> `localhost:8010`.
 
 This is purely additive and does not touch Agent Central's route.
 
@@ -214,7 +214,7 @@ leaving every existing rule untouched:
 
 ```
   - hostname: RESERVATIONS_DOMAIN
-    service: http://127.0.0.1:8001
+    service: http://127.0.0.1:8010
 ```
 
 Then create the DNS route and reload cloudflared. Reloading is the one moment
@@ -241,7 +241,7 @@ curl -fsS https://RESERVATIONS_DOMAIN/health           # expect {"status":"ok"}
 
 # Not reachable on the public IP (run from your laptop, NOT the box).
 # Expect connection refused or timeout, never a response:
-curl --max-time 5 http://<VPS_PUBLIC_IP>:8001/health   # must FAIL to connect
+curl --max-time 5 http://<VPS_PUBLIC_IP>:8010/health   # must FAIL to connect
 ```
 
 - Log in from your phone against `https://RESERVATIONS_DOMAIN` (the password you

@@ -19,7 +19,7 @@ User=hotel
 Group=hotel
 WorkingDirectory=/opt/hotel-reservations
 EnvironmentFile=/etc/hotel-reservations/hotel-reservations.env
-ExecStart=/opt/hotel-reservations/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
+ExecStart=/opt/hotel-reservations/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8010
 Restart=on-failure
 RestartSec=5
 
