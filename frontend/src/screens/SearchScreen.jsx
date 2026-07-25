@@ -35,6 +35,14 @@ export default function SearchScreen() {
     }
   }, [checkIn, checkOut, validRange])
 
+  function handleCheckInChange(value) {
+    // Auto-correct instead of disabling dates: if check-in lands on or after
+    // check-out, quietly push check-out to the day after. The impossible state
+    // never forms, and the availability query re-runs with the corrected range.
+    setCheckIn(value)
+    if (value >= checkOut) setCheckOut(addDays(value, 1))
+  }
+
   // The backend already decides free vs booked (same-day turnover reads as free);
   // we only display what it returns, never recompute it.
   const free = rooms ? rooms.filter((room) => room.available) : []
@@ -48,8 +56,7 @@ export default function SearchScreen() {
           <input
             type="date"
             value={checkIn}
-            max={checkOut}
-            onChange={(event) => setCheckIn(event.target.value)}
+            onChange={(event) => handleCheckInChange(event.target.value)}
           />
         </label>
         <label>
@@ -57,7 +64,6 @@ export default function SearchScreen() {
           <input
             type="date"
             value={checkOut}
-            min={checkIn}
             onChange={(event) => setCheckOut(event.target.value)}
           />
         </label>

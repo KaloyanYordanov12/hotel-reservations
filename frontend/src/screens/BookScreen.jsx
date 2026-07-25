@@ -88,6 +88,14 @@ export default function BookScreen() {
     }
   }
 
+  function handleCheckInChange(value) {
+    // Auto-correct instead of disabling dates: if check-in lands on or after
+    // check-out, quietly push check-out to the day after, so the impossible
+    // state never forms.
+    setCheckIn(value)
+    if (value >= checkOut) setCheckOut(addDays(value, 1))
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setError(null)
@@ -183,11 +191,11 @@ export default function BookScreen() {
         <div className="field-row">
           <label className="field">
             Check in
-            <input type="date" value={checkIn} max={checkOut} onChange={(e) => setCheckIn(e.target.value)} />
+            <input type="date" value={checkIn} onChange={(e) => handleCheckInChange(e.target.value)} />
           </label>
           <label className="field">
             Check out
-            <input type="date" value={checkOut} min={checkIn} onChange={(e) => setCheckOut(e.target.value)} />
+            <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
           </label>
         </div>
 
