@@ -1,16 +1,3 @@
-.search__top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.1rem;
-}
-
-.search__top button {
-  min-height: 2.5rem;
-  padding: 0 0.8rem;
-}
-
 .range {
   display: grid;
   grid-template-columns: 1fr 1fr;

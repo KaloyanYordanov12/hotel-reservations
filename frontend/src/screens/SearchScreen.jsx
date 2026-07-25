@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { api } from '../api'
-import { useAuth } from '../auth/authContext'
 import { addDays, formatShort, today } from '../dates'
 import './SearchScreen.css'
 
@@ -16,7 +15,6 @@ export default function SearchScreen() {
   const [checkOut, setCheckOut] = useState(addDays(start, 1))
   const [rooms, setRooms] = useState(null)
   const [error, setError] = useState(null)
-  const { logout } = useAuth()
 
   const validRange = checkOut > checkIn
 
@@ -44,13 +42,6 @@ export default function SearchScreen() {
 
   return (
     <main className="search">
-      <header className="search__top">
-        <h1>Availability</h1>
-        <button type="button" className="ghost" onClick={logout}>
-          Log out
-        </button>
-      </header>
-
       <form className="range" onSubmit={(event) => event.preventDefault()}>
         <label>
           Check in

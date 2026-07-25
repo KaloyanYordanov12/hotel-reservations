@@ -1,9 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 
+import Layout from './components/Layout'
 import { AuthProvider } from './auth/AuthProvider'
 import { RequireAuth } from './auth/RequireAuth'
 import BookScreen from './screens/BookScreen'
 import LoginScreen from './screens/LoginScreen'
+import ReservationsScreen from './screens/ReservationsScreen'
 import SearchScreen from './screens/SearchScreen'
 
 function App() {
@@ -12,7 +14,10 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginScreen />} />
         <Route element={<RequireAuth />}>
-          <Route path="/" element={<SearchScreen />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<SearchScreen />} />
+            <Route path="/reservations" element={<ReservationsScreen />} />
+          </Route>
           <Route path="/book" element={<BookScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
