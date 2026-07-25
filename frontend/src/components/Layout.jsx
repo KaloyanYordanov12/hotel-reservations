@@ -17,6 +17,9 @@ export default function Layout() {
         <NavLink to="/reservations" className="tab">
           Reservations
         </NavLink>
+        <NavLink to="/grid" className="tab">
+          Planner
+        </NavLink>
         <button type="button" className="ghost tabs__logout" onClick={logout}>
           Log out
         </button>

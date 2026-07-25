@@ -1,0 +1,85 @@
+.grid-caption {
+  margin: 1.3rem 0 0.5rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.grid-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--paper-raised);
+}
+
+.grid {
+  border-collapse: collapse;
+}
+
+.grid th,
+.grid td {
+  border: 1px solid var(--line);
+}
+
+/* The room column stays visible while the days scroll sideways on a phone. */
+.grid__corner,
+.grid__room {
+  position: sticky;
+  left: 0;
+  background: var(--paper-raised);
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.grid__corner {
+  z-index: 1;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.grid__day {
+  padding: 0.4rem 0.3rem;
+  min-width: 1.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.cell {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.cell--free {
+  background: var(--free-bg);
+}
+
+.cell--booked {
+  background: var(--booked-bg);
+}
+
+.grid-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.grid-legend__swatch {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.grid-legend__swatch--free {
+  background: var(--free-bg);
+}
+
+.grid-legend__swatch--booked {
+  background: var(--booked-bg);
+  margin-left: 0.8rem;
+}

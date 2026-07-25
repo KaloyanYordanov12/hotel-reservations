@@ -1,4 +1,7 @@
-from fastapi import Depends, FastAPI
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
@@ -32,3 +35,29 @@ app.include_router(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# The built React app (frontend/dist) is served by this same FastAPI process, at
+# the same origin, so the session cookie just works and there is no second
+# service or tunnel route. This catch-all is registered LAST, after /health and
+# every /api/* route, so the API is matched first and is never shadowed. It
+# serves a real built file when the path points at one, otherwise index.html, so
+# a client-side route survives a page refresh. It is unauthenticated on purpose:
+# she must be able to load the app in order to log in.
+DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
+
+@app.get("/{full_path:path}")
+def serve_spa(full_path: str):
+    # An unmatched API or health path must be a real 404, never HTML.
+    if full_path.startswith("api/") or full_path == "health":
+        raise HTTPException(status_code=404)
+    candidate = (DIST / full_path).resolve()
+    # Serve a real built asset when the path points at one, and only if it stays
+    # inside DIST (guards against path traversal).
+    if full_path and candidate.is_file() and DIST in candidate.parents:
+        return FileResponse(candidate)
+    index = DIST / "index.html"
+    if index.is_file():
+        return FileResponse(index)
+    raise HTTPException(status_code=404, detail="Frontend not built")
