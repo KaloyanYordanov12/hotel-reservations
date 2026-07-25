@@ -33,16 +33,24 @@ export default function GridScreen() {
     }
   }, [from, to, validRange])
 
+  function handleFromChange(value) {
+    // Auto-correct instead of disabling dates: if the start lands on or after
+    // the end, quietly push the end to the day after. The grid query then re-runs
+    // with the corrected range.
+    setFrom(value)
+    if (value >= to) setTo(addDays(value, 1))
+  }
+
   return (
     <main className="grid-screen">
       <form className="range" onSubmit={(event) => event.preventDefault()}>
         <label>
           From
-          <input type="date" value={from} max={to} onChange={(event) => setFrom(event.target.value)} />
+          <input type="date" value={from} onChange={(event) => handleFromChange(event.target.value)} />
         </label>
         <label>
           To
-          <input type="date" value={to} min={from} onChange={(event) => setTo(event.target.value)} />
+          <input type="date" value={to} onChange={(event) => setTo(event.target.value)} />
         </label>
       </form>
 
