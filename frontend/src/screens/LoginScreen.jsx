@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../auth/authContext'
 import { strings as t } from '../strings'
+import './LoginScreen.css'
 
 export default function LoginScreen() {
   const [password, setPassword] = useState('')
@@ -34,9 +35,9 @@ export default function LoginScreen() {
   }
 
   return (
-    <main>
-      <h1>{t.login.title}</h1>
-      <form onSubmit={handleSubmit}>
+    <main className="login">
+      <h1 className="login__title">{t.login.title}</h1>
+      <form className="login__card" onSubmit={handleSubmit}>
         <label>
           {t.login.passwordLabel}
           <input
@@ -49,7 +50,11 @@ export default function LoginScreen() {
         <button type="submit" disabled={submitting}>
           {submitting ? t.login.submitting : t.login.submit}
         </button>
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p className="login__error" role="alert">
+            {error}
+          </p>
+        )}
       </form>
     </main>
   )
