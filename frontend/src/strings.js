@@ -51,13 +51,13 @@ export const strings = {
 
   reservations: {
     filterAll: 'Всички',
-    filterOwes: 'Дължат депозит',
+    filterOwes: 'Дължат капаро',
     loadError: 'Резервациите не можаха да се заредят.',
     emptyAll: 'Няма резервации.',
-    emptyOwes: 'Всички са платили депозит.',
+    emptyOwes: 'Всички са платили капаро.',
     roomPrefix: 'Стая',
-    depositPaid: (amount) => `Платен ${amount} €`,
-    owesDeposit: 'Дължи депозит',
+    depositPaid: (amount) => `Платено ${amount} €`,
+    owesDeposit: 'Дължи капаро',
   },
 
   booking: {
@@ -70,7 +70,7 @@ export const strings = {
     checkIn: 'Настаняване',
     checkOut: 'Напускане',
     guests: 'Гости',
-    deposit: 'Депозит (€)',
+    deposit: 'Капаро (€)',
     parking: 'Паркинг',
     note: 'Бележка',
     submitNew: 'Създай резервация',
@@ -95,7 +95,7 @@ export const strings = {
       `Стая ${room} вече е заета от ${guest} (${checkIn} до ${checkOut}).`,
     conflictGeneric: 'Тези дати се застъпват с друга резервация.',
     guestsMin: 'Броят гости трябва да е поне 1.',
-    depositNegative: 'Депозитът не може да е отрицателен.',
+    depositNegative: 'Капарото не може да е отрицателно.',
     validationGeneric: 'Моля, проверете полетата.',
     saveError: 'Запазването е неуспешно.',
     deleteError: 'Изтриването е неуспешно.',
