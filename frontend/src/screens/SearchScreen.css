@@ -3,7 +3,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
   padding: 1rem;
-  background: var(--paper-raised);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r);
   box-shadow: var(--shadow-card);
@@ -42,17 +42,15 @@
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
   border-radius: var(--r);
-  background: var(--paper-raised);
+  background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-card);
+  transition: box-shadow 150ms ease;
 }
 
-/* A free room is the tap target that carries its context into booking. */
-.room--free {
-  border-color: var(--free-line);
-  background: var(--free-bg);
-}
-
+/* A free room is the tap target that carries its context into booking. It stays
+   crisp white and lifts a little on touch; the green lives in the nameplate and
+   the pill, not a full wash. */
 .room--free:hover {
   box-shadow: var(--shadow);
 }
@@ -61,16 +59,28 @@
   transform: translateY(1px);
 }
 
+/* Occupied rooms recede into a warm neutral. No red: this is information, not an
+   alarm. */
 .room--booked {
   border-color: var(--booked-line);
   background: var(--booked-bg);
+  box-shadow: none;
 }
 
+/* The nameplate: the room's number set like the plate on a hotel-room door. This
+   is the one loud detail in the whole app. */
 .room__id {
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--accent);
   min-width: 2.4rem;
+}
+
+.room--booked .room__id {
+  color: var(--ink-soft);
 }
 
 .room__body {
@@ -88,26 +98,28 @@
 
 .room__guest {
   font-size: 0.88rem;
-  color: var(--booked);
+  color: var(--ink-soft);
 }
 
 .room__tag {
   flex-shrink: 0;
   font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 0.25rem 0.55rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 999px;
-  background: #fff;
 }
 
+/* A considered soft-green component, not just green text. */
 .room__tag--free {
-  color: var(--free);
+  color: var(--accent);
+  background: var(--accent-soft);
   border: 1px solid var(--free-line);
 }
 
 .room__tag--booked {
-  color: var(--booked);
-  border: 1px solid var(--booked-line);
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
 }

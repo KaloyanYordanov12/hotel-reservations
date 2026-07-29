@@ -8,16 +8,16 @@
   min-height: 2.7rem;
   padding: 0 1rem;
   border-radius: 999px;
-  background: var(--paper-raised);
+  background: var(--surface);
   color: var(--ink-soft);
   border: 1px solid var(--line);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .filter--active {
-  background: var(--ink);
-  color: var(--paper-raised);
-  border-color: var(--ink);
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
 }
 
 .res-list {
@@ -37,9 +37,10 @@
   padding: 0.85rem 1rem;
   border: 1px solid var(--line);
   border-radius: var(--r);
-  background: var(--paper-raised);
+  background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-card);
+  transition: box-shadow 150ms ease;
 }
 
 .res:hover {
@@ -63,7 +64,7 @@
 }
 
 .res__dot--owes {
-  background: var(--booked);
+  background: var(--alert);
 }
 
 .res__body {
@@ -86,7 +87,7 @@
 .res__deposit {
   flex-shrink: 0;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: right;
 }
 
@@ -95,5 +96,5 @@
 }
 
 .res__deposit--owes {
-  color: var(--booked);
+  color: var(--alert);
 }

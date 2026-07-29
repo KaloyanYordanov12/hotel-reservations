@@ -1,6 +1,6 @@
 .grid-caption {
   margin: 1.3rem 0 0.5rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink-soft);
 }
 
@@ -8,7 +8,7 @@
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--r);
-  background: var(--paper-raised);
+  background: var(--surface);
   box-shadow: var(--shadow-card);
 }
 
@@ -26,16 +26,24 @@
 .grid__room {
   position: sticky;
   left: 0;
-  background: var(--paper-raised);
+  background: var(--surface);
   text-align: left;
   padding: 0.5rem 0.7rem;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
+}
+
+/* The same nameplate accent as the search cards, in miniature. */
+.grid__room {
+  color: var(--accent);
 }
 
 .grid__corner {
   z-index: 1;
-  font-size: 0.82rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--ink-soft);
 }
 
@@ -43,7 +51,7 @@
   padding: 0.4rem 0.3rem;
   min-width: 1.9rem;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink-soft);
 }
 

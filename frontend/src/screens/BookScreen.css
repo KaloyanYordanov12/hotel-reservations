@@ -59,12 +59,12 @@
 }
 
 .danger__trigger {
-  color: var(--booked);
-  border-color: var(--booked-line);
+  color: var(--alert);
+  border-color: var(--alert-line);
 }
 
 .danger__yes {
-  background: var(--booked);
-  border-color: var(--booked);
-  color: var(--paper-raised);
+  background: var(--alert);
+  border-color: var(--alert);
+  color: var(--surface);
 }

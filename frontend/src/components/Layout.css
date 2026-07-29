@@ -2,20 +2,21 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
   margin-bottom: 1.7rem;
 }
 
 .tab {
   padding: 1rem 0.2rem;
   color: var(--ink-soft);
-  font-weight: 600;
+  font-weight: 500;
   border-bottom: 2px solid transparent;
+  transition: color 150ms ease, border-color 150ms ease;
 }
 
 .tab.active {
   color: var(--ink);
-  border-bottom-color: var(--ink);
+  border-bottom-color: var(--accent);
 }
 
 .tabs__logout {
