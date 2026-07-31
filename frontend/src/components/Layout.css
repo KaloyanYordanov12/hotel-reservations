@@ -24,3 +24,30 @@
   min-height: 2.3rem;
   padding: 0 0.7rem;
 }
+
+/* Touch devices get a full 44px logout target. The tab row is already ~56px tall
+   from the tabs, so this grows only the hit area, not the header height. Desktop
+   (a fine pointer) keeps the smaller pill. */
+@media (pointer: coarse) {
+  .tabs__logout {
+    min-height: 2.75rem;
+  }
+}
+
+/* Narrow phones (~375px): three Cyrillic tab labels plus the logout button do not
+   fit one row at the desktop spacing and would scroll sideways. Tighten the gaps
+   and drop the tabs' horizontal padding so the row fits without wrapping or
+   truncating. Wider screens keep the original spacing. */
+@media (max-width: 400px) {
+  .tabs {
+    gap: 0.5rem;
+  }
+
+  .tab {
+    padding: 1rem 0;
+  }
+
+  .tabs__logout {
+    padding: 0 0.5rem;
+  }
+}
