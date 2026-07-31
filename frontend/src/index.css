@@ -63,7 +63,18 @@ body {
 
 body {
   min-height: 100svh;
-  background: var(--paper);
+  /* Faint botanical wallpaper: one 160px tile holding a few pale-sage outlined
+     leaves, generated as an inline SVG so there is no asset to bundle or license,
+     and tiled with background-repeat. Nothing in the tile touches its edges, so it
+     repeats seamlessly by construction. The warm off-white stays the base color
+     behind it; cards, inputs, and the range/grid panels paint solid surfaces on
+     top, so the pattern shows only in the page margins and gutters and never
+     under body text. It is static, so there is no motion to reduce. To tune:
+     lift density by editing the leaf transforms, and fade it further via the
+     stroke colour (%23c9d6c0) or the group opacity (0.5). */
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='160'%20height='160'%20viewBox='0%200%20160%20160'%3E%3Cg%20fill='none'%20stroke='%23c9d6c0'%20stroke-width='1.1'%20stroke-linecap='round'%20opacity='0.5'%3E%3Cg%20transform='translate(36,44)%20rotate(-16)'%3E%3Cpath%20d='M0,11%20C4,4%204,-4%200,-11%20C-4,-4%20-4,4%200,11%20Z'/%3E%3Cpath%20d='M0,9%20L0,-9'/%3E%3C/g%3E%3Cg%20transform='translate(116,56)%20rotate(22)'%3E%3Cpath%20d='M0,10%20C3.6,3.6%203.6,-3.6%200,-10%20C-3.6,-3.6%20-3.6,3.6%200,10%20Z'/%3E%3Cpath%20d='M0,8%20L0,-8'/%3E%3C/g%3E%3Cg%20transform='translate(70,112)%20rotate(-6)'%3E%3Cpath%20d='M0,11%20C4,4%204,-4%200,-11%20C-4,-4%20-4,4%200,11%20Z'/%3E%3Cpath%20d='M0,9%20L0,-9'/%3E%3C/g%3E%3Cg%20transform='translate(126,128)%20rotate(40)'%3E%3Cpath%20d='M0,9%20C3.2,3.2%203.2,-3.2%200,-9%20C-3.2,-3.2%20-3.2,3.2%200,9%20Z'/%3E%3Cpath%20d='M0,7%20L0,-7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 #root {
