@@ -4,15 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Fraunces carries the name and the room nameplates; Inter carries everything
-         read at a glance. display=swap so text is never blocked on the network:
-         a fallback shows instantly and the serif swaps in when it arrives. -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fraunces (headings, room nameplates) and Inter (body) are self-hosted and
+         bundled via @fontsource in src/main.jsx, so there is no external font CDN
+         and no font-swap flash from a slow network. -->
     <title>Резервации</title>
   </head>
   <body>
