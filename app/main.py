@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -20,6 +21,36 @@ app.add_middleware(
     same_site="lax",
     https_only=settings.cookie_secure,
 )
+
+
+def _install_demo_cors(app: FastAPI, settings) -> None:
+    """Allow the demo frontend's origin to call this backend, in demo mode ONLY.
+
+    The demo frontend is a separate Cloudflare Pages project on its own origin, so
+    its browser calls are cross-origin and need CORS response headers. This is
+    added ONLY when DEMO_MODE is on AND DEMO_FRONTEND_ORIGIN is set, and only for
+    those exact origins. The real app calls its API same-origin, adds no CORS
+    middleware at all, and is unaffected. Fail-secure: demo mode without a
+    configured origin grants no cross-origin access.
+    """
+    if not (settings.demo_mode and settings.demo_allowed_origins):
+        return
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.demo_allowed_origins,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        # The frontend fetch sends credentials: "include"; a credentialed
+        # cross-origin request needs this true AND a specific (non-wildcard)
+        # origin, which we have. The demo sets no cookies, so this grants nothing
+        # beyond letting the browser read the response from the trusted origin.
+        allow_credentials=True,
+    )
+
+
+# Added at import: reflects this process's env. The demo deployment sets DEMO_MODE
+# and DEMO_FRONTEND_ORIGIN and gets CORS; the real app sets neither and does not.
+_install_demo_cors(app, settings)
 
 # /api/login stays open; everything else under /api requires a session. /health
 # is not under /api and stays open for uptime checks.

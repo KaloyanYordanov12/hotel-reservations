@@ -38,29 +38,24 @@ Expect `200` from each. If any is unhealthy, STOP and roll back (see the end).
 ## Frontend: a separate Cloudflare Pages project (NOT built or served here)
 
 The demo frontend is a SECOND Cloudflare Pages project that you set up in the
-Cloudflare dashboard, separate from this runbook. It is built with
-`VITE_API_URL=https://reservations-demo.kaloyanyordanov.dev`, and this backend
-answers at that hostname once the tunnel route (Step 6) is added. Nothing about
-the frontend is built or served on the VPS; this demo backend serves the API
-only.
+Cloudflare dashboard, separate from this runbook. Nothing about the frontend is
+built or served on the VPS; this demo backend serves the API only.
 
-Flag before you build that Pages project, so it does not silently fail. As the
-code stands today, a separate-origin frontend will NOT work without two code
-changes I have deliberately not made here:
+The two code changes a separate-origin frontend needs are now in place, so it will
+work once both ends are configured:
 
-1. `frontend/src/api.js` calls `/api` as a RELATIVE, same-origin path and does not
-   read `VITE_API_URL`. On Pages that means it would call the Pages origin, not
-   this backend. It must be changed to prefix requests with `VITE_API_URL`.
-2. Cross-origin browser calls from the Pages origin to
-   `reservations-demo.kaloyanyordanov.dev` need CORS response headers, which the
-   backend does not send today. DEMO_MODE removes the login/cookie, so it is a
-   plain (no-credentials) CORS allow for the Pages origin, but it still must be
-   added.
+1. `frontend/src/api.js` reads `VITE_API_URL` as the API base (empty for the real
+   same-origin app). Build the Pages project with
+   `VITE_API_URL=https://reservations-demo.kaloyanyordanov.dev`, which is where
+   this backend answers once the tunnel route (Step 6) is added.
+2. The backend sends CORS headers for the demo frontend's origin, but ONLY in demo
+   mode and ONLY for the origin(s) in `DEMO_FRONTEND_ORIGIN` (set in Step 5). Set
+   that to the Pages project's own origin (its `*.pages.dev` URL or its custom
+   domain), which is a DIFFERENT origin from the backend's
+   `reservations-demo` subdomain. The real app adds no CORS and is unchanged.
 
-Both are small and belong in their own commit. Say the word and I will wire
-`VITE_API_URL` support into `api.js` and a scoped CORS allow into the backend
-before you build the Pages project. This runbook stands on its own regardless:
-the backend below is correct and testable on loopback without any frontend.
+This runbook stands on its own regardless: the backend below is correct and
+testable on loopback without any frontend.
 
 ---
 
@@ -200,6 +195,9 @@ as root regardless. Now edit `/etc/hotel-demo/hotel-demo.env` and set real value
   database `hotel_demo`. It must name `hotel_demo`, never `hotel`. (The reset
   script hard-refuses any other database name.)
 - `DEMO_MODE`: leave `1`. This is what makes it the demo.
+- `DEMO_FRONTEND_ORIGIN`: the demo Pages project's own origin (its `*.pages.dev`
+  URL or custom domain), so the backend allows its cross-origin calls via CORS.
+  Not the backend's `reservations-demo` subdomain. Leave unset to allow none.
 - `SESSION_SECRET`: `python3.13 -c "import secrets; print(secrets.token_urlsafe(32))"`
 - `APP_PASSWORD_HASH`: a throwaway hash, required to boot even though login is
   bypassed: `cd /opt/hotel-demo && sudo -u hotel-demo ./venv/bin/python scripts/hash_password.py`

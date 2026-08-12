@@ -74,6 +74,20 @@ class Settings(BaseSettings):
             return False
         return str(value).strip().lower() in _DEMO_TRUE_VALUES
 
+    # The exact origin(s) the demo frontend (a separate Cloudflare Pages project on
+    # its own origin) is served from, so the demo backend can answer its
+    # cross-origin API calls. Comma-separated for more than one. Consulted ONLY in
+    # demo mode (see main.py); the real app never reads it and its CORS posture is
+    # unchanged. Empty by default, so demo mode without it grants no cross-origin
+    # access.
+    demo_frontend_origin: str = ""
+
+    @property
+    def demo_allowed_origins(self) -> list[str]:
+        """The configured demo frontend origins, split and cleaned. Empty when
+        unset, which is the fail-secure default: no cross-origin access granted."""
+        return [o.strip() for o in self.demo_frontend_origin.split(",") if o.strip()]
+
     @field_validator("session_secret")
     @classmethod
     def _reject_weak_secret(cls, value: str) -> str:

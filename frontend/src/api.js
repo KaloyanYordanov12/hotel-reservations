@@ -24,6 +24,14 @@ export class ApiError extends Error {
   }
 }
 
+// Base URL for the API. Empty by default, so the real app calls the API on its
+// own origin (the same FastAPI process serves both). The demo frontend is a
+// separate Cloudflare Pages project on a different origin, so its build sets
+// VITE_API_URL to the demo backend's URL (e.g. https://reservations-demo...);
+// these calls then go cross-origin to that backend, which allows this origin via
+// CORS in demo mode. A trailing slash is trimmed so the joined URL stays clean.
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
 // The auth gate registers a handler here so that any protected call returning
 // 401 sends her back to login, wherever it happens.
 let onUnauthorized = null
@@ -34,7 +42,7 @@ export function setUnauthorizedHandler(handler) {
 async function request(method, path, body) {
   let response
   try {
-    response = await fetch(`/api${path}`, {
+    response = await fetch(`${API_BASE}/api${path}`, {
       method,
       credentials: 'include',
       headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
