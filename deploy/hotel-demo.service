@@ -1,0 +1,41 @@
+# systemd unit for the PUBLIC DEMO backend (hotel-demo).
+#
+# A second, independent copy of the same app, running from its own checkout at
+# /opt/hotel-demo, as its own user, against its own database (hotel_demo), on its
+# own port. It shares nothing writable with the real hotel-reservations service.
+#
+# Install: copy to /etc/systemd/system/hotel-demo.service on the VPS, then
+# `systemctl daemon-reload`. daemon-reload only re-reads unit files; it does NOT
+# restart Agent Central, the real hotel service, or anything else running.
+#
+# uvicorn binds 127.0.0.1 only, on a DISTINCT port from the real service (8010).
+# The app is never reachable on the public IP; the Cloudflare tunnel (added in a
+# later, separate step) is the only door. Do not change --host to 0.0.0.0.
+
+[Unit]
+Description=Hotel Reservations DEMO backend (FastAPI via uvicorn, DEMO_MODE)
+Documentation=file:///opt/hotel-demo/docs/deploy-demo.md
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hotel-demo
+Group=hotel-demo
+WorkingDirectory=/opt/hotel-demo
+EnvironmentFile=/etc/hotel-demo/hotel-demo.env
+ExecStart=/opt/hotel-demo/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8011
+Restart=on-failure
+RestartSec=5
+
+# Hardening. The app writes nothing to disk, so the filesystem is read-only to it.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

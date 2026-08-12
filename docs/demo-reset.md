@@ -29,15 +29,22 @@ Runs at :00 and :30. It sources the demo env file first, so the app sees the
 the app requires to start, even though the demo has no login), then runs the
 reset from the app root as a module so `import scripts.seed_demo` resolves.
 
+It is installed as a system cron drop-in that runs as the unprivileged
+`hotel-demo` user (the same user the demo service runs as, which can read the env
+file and write the log dir). `docs/deploy-demo.md` Step 10 is the authoritative
+install step; the drop-in it writes is:
+
 ```
-# Reset the public hotel demo to clean seeded data every 30 minutes.
-*/30 * * * * cd /opt/hotel-demo && set -a && . /etc/hotel-demo/hotel-demo.env && set +a && /opt/hotel-demo/venv/bin/python -m scripts.reset_demo >> /var/log/hotel-demo/reset.log 2>&1
+# /etc/cron.d/hotel-demo-reset
+# Reset the public hotel demo to clean seeded data every 30 minutes (:00 and :30).
+*/30 * * * * hotel-demo cd /opt/hotel-demo && set -a && . /etc/hotel-demo/hotel-demo.env && set +a && /opt/hotel-demo/venv/bin/python -m scripts.reset_demo >> /var/log/hotel-demo/reset.log 2>&1
 ```
 
-The paths (`/opt/hotel-demo` app root, `/opt/hotel-demo/venv` venv,
+The `hotel-demo` field after the schedule is the user to run as; it is required in
+`/etc/cron.d` files and absent from a personal `crontab -e`. The paths
+(`/opt/hotel-demo` app root, `/opt/hotel-demo/venv` venv,
 `/etc/hotel-demo/hotel-demo.env` env file, `/var/log/hotel-demo/reset.log` log)
-are the layout the Step 5 deploy runbook creates. Adjust the line to match
-whatever that runbook settles on before installing it.
+are the layout `docs/deploy-demo.md` creates.
 
 Run it once by hand first to confirm it seeds and the guard passes:
 
