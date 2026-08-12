@@ -23,6 +23,10 @@ _PLACEHOLDER_SECRET = "replace-with-a-long-random-string"
 _PLACEHOLDER_HASH = "replace-with-a-bcrypt-hash"
 _MIN_SECRET_LENGTH = 32
 
+# The only strings that turn demo mode ON. Case-insensitive, whitespace-trimmed.
+# Everything else (unset, "0", "false", "", "banana") is OFF. See demo_mode.
+_DEMO_TRUE_VALUES = {"1", "true", "yes"}
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -46,6 +50,29 @@ class Settings(BaseSettings):
     # value fails secure. Do not delete this conditional after finding it "works
     # fine on localhost".
     cookie_secure: bool = True
+
+    # OFF unless an operator explicitly turns it on, exactly like cookie_secure
+    # is a fail-secure boolean. The SAME codebase runs my mother's real app and
+    # the public demo; a mistake here must never strip auth off the real one.
+    # So the default is False, and _parse_demo_mode below only returns True for
+    # a small set of explicit true tokens ("1"/"true"/"yes"). Every other value,
+    # including an unset var, a "0", a "false", an empty string, or garbage,
+    # resolves to False. Unset = secure = auth on. Only a deliberate DEMO_MODE=1
+    # (set in the demo deployment's env, never the real one) disables the login
+    # wall, and it does so in require_authenticated, not by touching any other
+    # auth logic.
+    demo_mode: bool = False
+
+    @field_validator("demo_mode", mode="before")
+    @classmethod
+    def _parse_demo_mode(cls, value: object) -> bool:
+        # mode="before" runs on the raw env string ahead of bool coercion, so a
+        # value pydantic would otherwise reject (e.g. "banana") cannot raise and
+        # take the app down; it simply reads as OFF. An unset var uses the field
+        # default (False) and never reaches here, which is also OFF.
+        if value is None:
+            return False
+        return str(value).strip().lower() in _DEMO_TRUE_VALUES
 
     @field_validator("session_secret")
     @classmethod

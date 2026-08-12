@@ -51,11 +51,27 @@ def _password_ok(password: str) -> bool:
 
 
 def require_authenticated(request: Request) -> None:
-    """Guard for the protected routes. 401 unless the session is authenticated."""
+    """Guard for the protected routes. 401 unless the session is authenticated.
+
+    In demo mode (the public, login-less deployment) every request is let
+    through as the demo user. DEMO_MODE is fail-secure in config.py: it is off
+    unless explicitly turned on, so the real app is unaffected and this branch
+    is dead code there. This is the ONLY place auth changes for the demo; the
+    login endpoint still exists, it is simply not needed.
+    """
+    if settings.demo_mode:
+        return
     if not request.session.get("authenticated"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
         )
+
+
+@router.get("/demo-status")
+def demo_status():
+    """Public. Lets the frontend decide whether to show the demo banner. It
+    reveals only whether this deployment is the demo, which is not a secret."""
+    return {"demo": settings.demo_mode}
 
 
 @router.post("/login")
