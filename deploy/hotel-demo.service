@@ -2,7 +2,9 @@
 #
 # A second, independent copy of the same app, running from its own checkout at
 # /opt/hotel-demo, as its own user, against its own database (hotel_demo), on its
-# own port. It shares nothing writable with the real hotel-reservations service.
+# own port. It never touches /opt/hotel-reservations or that directory's .env: its
+# WorkingDirectory is the demo checkout and its EnvironmentFile is the demo's own
+# /etc/hotel-demo/hotel-demo.env. It shares nothing writable with the real service.
 #
 # Install: copy to /etc/systemd/system/hotel-demo.service on the VPS, then
 # `systemctl daemon-reload`. daemon-reload only re-reads unit files; it does NOT

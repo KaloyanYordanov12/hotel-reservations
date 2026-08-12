@@ -19,6 +19,20 @@ reconfigures an existing service, unit, database, tunnel, or route. In
 particular it never alters the real `hotel` database or its role. If a step seems
 to require touching any of them, STOP and do not improvise.
 
+### The real app's directory is off-limits
+
+The real hotel service runs from `/opt/hotel-reservations`, as root, with its own
+`.env` in that directory. This runbook treats that directory as read-never,
+write-never: it is never cloned into, never `cd`ed into, never copied from, and
+its `.env` is never read. The demo is a FRESH clone of the public repo into its
+OWN directory `/opt/hotel-demo`, with its OWN env file at
+`/etc/hotel-demo/hotel-demo.env`, its OWN venv, its OWN unprivileged service user
+`hotel-demo`, and its OWN systemd unit whose `WorkingDirectory` is
+`/opt/hotel-demo`. The two deployments share only the Postgres server and the
+Python/Postgres binaries already on the box; they share no directory, env file,
+venv, user, port, database, or systemd unit. If any command in this runbook has
+`/opt/hotel-reservations` in it, you are off-script: stop.
+
 After every step marked `[CHECK AC]`, confirm the existing sites still answer:
 
 ```
@@ -107,9 +121,10 @@ STOP conditions, do not work around them:
 
 ## Step 2: Demo service user and directories (separate from the real app)
 
-A dedicated unprivileged user, its own app dir, its own config dir, and a log dir
-for the reset cron. None of these overlap the real `hotel` user or
-`/opt/hotel-reservations`.
+A dedicated unprivileged user (`hotel-demo`), its own app dir, its own config
+dir, and a log dir for the reset cron. None of these overlap `/opt/hotel-reservations`
+or the identity the real service runs as: the demo never shares a directory, env
+file, venv, or user with the real app.
 
 ```
 sudo useradd --system --home /opt/hotel-demo --shell /usr/sbin/nologin hotel-demo
@@ -129,7 +144,20 @@ stat -c '%a %U:%G %n' /opt/hotel-demo    # expect 755 hotel-demo:hotel-demo
 ## Step 3: Code, venv, dependencies
 
 Same repo, a SEPARATE checkout. The pushed code already includes DEMO_MODE and the
-seed/reset scripts.
+seed/reset scripts. This clones into `/opt/hotel-demo`; it never writes into, or
+reads from, `/opt/hotel-reservations`.
+
+Safety guard: refuse to proceed unless the demo path is genuinely distinct from
+the real app's path (guards against a symlink or a fat-fingered path pointing the
+demo at the real checkout):
+
+```
+test "$(readlink -f /opt/hotel-demo 2>/dev/null || echo /opt/hotel-demo)" != /opt/hotel-reservations \
+  && echo "ok: demo dir is separate from the real app" \
+  || { echo "STOP: /opt/hotel-demo resolves into the real app dir"; }
+```
+
+Then clone and build the venv, all inside the demo dir:
 
 ```
 sudo -u hotel-demo git clone <THIS_REPO_URL> /opt/hotel-demo
@@ -140,7 +168,8 @@ sudo -u hotel-demo ./venv/bin/pip install -r requirements.txt
 ```
 
 The lock resolves the same on this Linux box as it was compiled for. Do not
-recompile it here.
+recompile it here. Note the demo's own `.env` does not live here: it goes to
+`/etc/hotel-demo/hotel-demo.env` in Step 5, never `/opt/hotel-reservations/.env`.
 
 `[CHECK AC]`
 
@@ -288,6 +317,15 @@ sudo cp /opt/hotel-demo/deploy/hotel-demo.service \
 sudo systemctl daemon-reload          # re-reads unit files only; restarts nothing
 sudo systemctl enable --now hotel-demo
 sudo systemctl status hotel-demo --no-pager | head -6
+```
+
+Confirm the unit points ONLY at the demo's own directory and env file, never the
+real app's:
+
+```
+grep -E 'WorkingDirectory|EnvironmentFile|ExecStart' /etc/systemd/system/hotel-demo.service
+# WorkingDirectory=/opt/hotel-demo, EnvironmentFile=/etc/hotel-demo/hotel-demo.env,
+# ExecStart under /opt/hotel-demo/venv. None of these mention /opt/hotel-reservations.
 ```
 
 Confirm it is up on loopback, on the demo port, and nowhere else:
