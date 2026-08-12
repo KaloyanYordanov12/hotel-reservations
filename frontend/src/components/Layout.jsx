@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 
 import { useAuth } from '../auth/authContext'
 import { strings as t } from '../strings'
+import DemoBanner from './DemoBanner'
 import './Layout.css'
 
 // Shell for the two main tabs. The focused booking form is deliberately outside
@@ -11,6 +12,7 @@ export default function Layout() {
 
   return (
     <div className="layout">
+      <DemoBanner />
       <nav className="tabs">
         <NavLink to="/" end className="tab">
           {t.tabs.availability}

@@ -1,0 +1,15 @@
+/* A quiet strip in the eucalyptus family, matching the FREE/available palette so
+   it reads as information, not an alarm. Sits above the tabs, full card width,
+   same soft radius as the inputs and cards. */
+.demo-banner {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--free-line);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-align: center;
+}

@@ -102,6 +102,11 @@ export const strings = {
     loadError: 'Резервацията не можа да се зареди.',
   },
 
+  demo: {
+    // Honest about what this deployment is: seeded sample data that resets.
+    banner: 'Демо, примерни данни. Нулира се на всеки 30 минути.',
+  },
+
   planner: {
     from: 'От',
     to: 'До',
