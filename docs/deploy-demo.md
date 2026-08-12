@@ -227,10 +227,28 @@ as root regardless. Now edit `/etc/hotel-demo/hotel-demo.env` and set real value
 - `DEMO_FRONTEND_ORIGIN`: the demo Pages project's own origin (its `*.pages.dev`
   URL or custom domain), so the backend allows its cross-origin calls via CORS.
   Not the backend's `reservations-demo` subdomain. Leave unset to allow none.
-- `SESSION_SECRET`: `python3.13 -c "import secrets; print(secrets.token_urlsafe(32))"`
+- `SESSION_SECRET`: `python3.13 -c "import secrets; print(secrets.token_urlsafe(32))"`.
+  Paste it between single quotes: `SESSION_SECRET='...'`.
 - `APP_PASSWORD_HASH`: a throwaway hash, required to boot even though login is
-  bypassed: `cd /opt/hotel-demo && sudo -u hotel-demo ./venv/bin/python scripts/hash_password.py`
+  bypassed: `cd /opt/hotel-demo && sudo -u hotel-demo ./venv/bin/python scripts/hash_password.py`.
+  This value MUST be single-quoted: `APP_PASSWORD_HASH='$2b$12$...'`. A bcrypt hash
+  contains `$2b$12$...`, and the reset cron sources this file with bash; unquoted,
+  bash expands `$2b`/`$12` and mangles the hash. Single quotes prevent that, and
+  systemd strips the quotes and stores the literal value.
 - `COOKIE_SECURE`: leave `True`.
+
+Sanity-check the hash survived quoting. A bcrypt hash is exactly 60 characters and
+starts with `$2b$` (or `$2a$`/`$2y$`). Read it back through bash sourcing, which is
+exactly what the reset cron does, so this proves the real path is not mangled:
+
+```
+sudo bash -c 'set -a; . /etc/hotel-demo/hotel-demo.env; set +a; echo "${#APP_PASSWORD_HASH} chars; prefix ${APP_PASSWORD_HASH:0:4}"'
+# expect: 60 chars; prefix $2b$
+```
+
+If it prints anything other than 60 characters or the prefix is not `$2`, the hash
+was mangled: the quotes are missing or wrong. Fix the value and re-check before
+continuing.
 
 ---
 
